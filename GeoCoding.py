@@ -112,6 +112,7 @@ class GeoCoding:
         dlg = ConfigDialog(self)
         geocoders = {
                 'Nominatim (Openstreetmap)' : 'Nominatim',
+                'DORIS SearchService' : 'DORIS',
                 'Google' : 'GoogleV3',
             }
         # Get current index
@@ -180,6 +181,8 @@ class GeoCoding:
             self.logMessage(str(address))
             if len(address) == 0:
                 QMessageBox.information(self.iface.mainWindow(), QCoreApplication.translate('GeoCoding', "Reverse GeoCoding error"), unicode(QCoreApplication.translate('GeoCoding', "<strong>Empty result</strong>.<br>")))
+            elif address[0] == 'unsupported':
+                QMessageBox.information(self.iface.mainWindow(), QCoreApplication.translate('GeoCoding', "Reverse GeoCoding unsupported"), unicode(QCoreApplication.translate('GeoCoding', "Reverse geocoding is not supported by the selected geocoder engine.")))
             else:
                 QMessageBox.information(self.iface.mainWindow(), QCoreApplication.translate('GeoCoding', "Reverse GeoCoding"),  unicode(QCoreApplication.translate('GeoCoding', "Reverse geocoding found the following address:<br><strong>%s</strong>")) %  address[0][0])
                 # save point
@@ -249,10 +252,12 @@ class GeoCoding:
         geocoder_class = str(self.get_config('GeocoderClass'))
 
         if not geocoder_class:
-            geocoder_class ='Nominatim'
+            geocoder_class = 'Nominatim'
 
         if geocoder_class == 'Nominatim':
             return OsmGeoCoder()
+        elif geocoder_class == 'DORIS':
+            return DorisGeoCoder()
         else:
             return GoogleGeoCoder(self.get_config('googleKey'))
 

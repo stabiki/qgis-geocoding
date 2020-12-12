@@ -17,6 +17,8 @@ email                : info@itopen.it
  *                                                                         *
  ***************************************************************************/
 """
+import re
+from pyproj import Proj, transform
 from .networkaccessmanager import NetworkAccessManager
 import sys, os, json
 from qgis.core import QgsSettings, QgsMessageLog
@@ -54,6 +56,28 @@ class OsmGeoCoder():
             return [(rec['display_name'], (rec['lon'], rec['lat']))]
         except Exception as e:
             raise GeoCodeException(str(e))
+
+class DorisGeoCoder():
+    url = 'https://srv.doris.at/solr/searchservice/search/all2/?q={address}'
+     
+    fromProj = Proj('epsg:3857')
+    toProj   = Proj('epsg:4326')
+    
+    def geoToLonLat(self, geo):
+        geo = [re.sub('[^0-9\\.]', '', part) for part in geo.split(' ')]
+        return transform(self.fromProj, self.toProj, geo[0], geo[1])[::-1]
+
+    def geocode(self, address):
+        try: 
+            url = self.url.format(**{'address': address.decode('utf8')})
+            logMessage(url)
+            results = json.loads(NAM.request(url, blocking = True)[1].decode('utf8'))['response']['docs']
+            return [(rec['title'][0], (self.geoToLonLat(rec['geo'][0]))) for rec in results]
+        except Exception as e:
+            raise GeoCodeException(str(e))
+
+    def reverse(self, lon, lat):
+        return ['unsupported']
 
 class GoogleGeoCoder():
 
