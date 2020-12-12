@@ -1,0 +1,1 @@
+QGIS Python geocoding and reverse geocoding plugin forked from [elpaso/qgis-geocoding](https://github.com/elpaso/qgis-geocoding) with, additionally, the Austrian [DORIS SearchService](https://www.doris.at/service/api_searchservice.aspx) geocoder engine.
